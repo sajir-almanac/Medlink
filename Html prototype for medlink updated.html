@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedLink AI - Speech to Text and Automatic Registration</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; background-color: #f5f7fa; }
+    h1 { color: #333; }
+    textarea { width: 100%; height: 150px; padding: 10px; margin-top: 10px; border-radius: 8px; border: 1px solid #ccc; }
+    input, button { margin-top: 20px; padding: 10px 20px; font-size: 16px; border-radius: 8px; border: none; background-color: #4CAF50; color: white; cursor: pointer; }
+    input:focus, button:focus { outline: none; }
+    button:hover { background-color: #45a049; }
+    .button-group { margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <h1>MedLink AI - Patient Entry Form & Voice Input</h1>
+
+  <div class="form-section">
+    <label for="patient-name">Patient Name:</label>
+    <input type="text" id="patient-name" placeholder="Patient's name will appear here...">
+    
+    <label for="patient-age">Patient Age:</label>
+    <input type="number" id="patient-age" placeholder="Patient's age will appear here...">
+    
+    <label for="patient-symptoms">Symptoms:</label>
+    <textarea id="patient-symptoms" placeholder="Patient's symptoms will appear here..."></textarea>
+    
+    <button id="submit-form">Submit Patient Information</button>
+  </div>
+
+  <div class="button-group">
+    <button id="start-recognition">🎙️ Start Speaking</button>
+  </div>
+
+  <script>
+    let recognition;
+    let patientData = {}; // To store patient data automatically
+
+    // Initialize Speech Recognition
+    if ('webkitSpeechRecognition' in window) {
+      recognition = new webkitSpeechRecognition();
+      recognition.lang = 'en-US'; // Language you want to start with
+      recognition.continuous = false; // Capture single phrase
+      recognition.interimResults = false; // Don't show partial results
+
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        console.log('Recognized: ', transcript); // Log recognized speech for testing
+
+        // Automatically populate the form fields with the recognized speech
+        if (transcript.toLowerCase().includes("name")) {
+          document.getElementById('patient-name').value = transcript.replace('name', '').trim();
+          patientData.name = transcript.replace('name', '').trim();
+        } else if (transcript.toLowerCase().includes("age")) {
+          document.getElementById('patient-age').value = transcript.replace('age', '').trim();
+          patientData.age = transcript.replace('age', '').trim();
+        } else if (transcript.toLowerCase().includes("symptom")) {
+          document.getElementById('patient-symptoms').value = transcript.replace('symptom', '').trim();
+          patientData.symptoms = transcript.replace('symptom', '').trim();
+        }
+      };
+
+      recognition.onerror = function(event) {
+        console.error(event.error);
+        alert('Error occurred: ' + event.error);
+      };
+    } else {
+      alert('Speech Recognition not supported in this browser. Try Google Chrome.');
+    }
+
+    // Start speech recognition when the button is clicked
+    document.getElementById('start-recognition').onclick = () => {
+      recognition.start();
+    };
+
+    // Submit the patient data to a server or database (for demo purposes, just log the data)
+    document.getElementById('submit-form').onclick = function() {
+      console.log('Patient Data Submitted:', patientData);
+
+      // You can now send the data to a backend server for storage
+      // For example:
+      // fetch('your-api-endpoint', { method: 'POST', body: JSON.stringify(patientData), headers: { 'Content-Type': 'application/json' } })
+      
+      // Clear the form
+      document.getElementById('patient-name').value = '';
+      document.getElementById('patient-age').value = '';
+      document.getElementById('patient-symptoms').value = '';
+    };
+  </script>
+
+</body>
+</html>
